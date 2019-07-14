@@ -138,6 +138,8 @@ pub mod pwm_input;
 #[cfg(feature = "device-selected")]
 pub mod qei;
 #[cfg(feature = "device-selected")]
+pub mod input_capture;
+#[cfg(feature = "device-selected")]
 pub mod rcc;
 #[cfg(feature = "device-selected")]
 pub mod rtc;
