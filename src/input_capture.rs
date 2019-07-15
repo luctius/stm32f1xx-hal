@@ -43,8 +43,6 @@
 
 use core::{marker::PhantomData, mem};
 
-use stm32f1xx_hal as hal;
-
 use crate::{
     afio::MAPR,
     bb,
@@ -246,7 +244,7 @@ pub trait InputChannelPin {
     fn unlisten(&mut self);
     fn generate_event(&mut self);
 
-    fn get_herz(&self, clocks: Clocks) -> Hertz;
+    fn get_herz(&mut self, clocks: Clocks) -> Hertz;
     fn has_overcapture(&self) -> bool;
     fn has_event(&self) -> bool;
 
@@ -379,28 +377,19 @@ macro_rules! hal {
                     unsafe { (*$TIMX::ptr()).egr.write(|w| w.cc1g().set_bit() ) }
                 }
 
-                fn get_herz(&self, clocks: Clocks) -> Hertz {
-                    static mut PREVIOUS: spin::Mutex<u32> = spin::Mutex::new(0);
-
+                fn get_herz(&mut self, clocks: Clocks) -> Hertz {
                     #[allow(unsafe_code)]
                     unsafe {
-                        let mut guard = PREVIOUS.lock();
-                        let prev = *guard;
+                        let current = (*$TIMX::ptr()).ccr1.read().ccr().bits() as u32;
+
+                        // Reset Counter
+                        (*$TIMX::ptr()).cnt.reset();
 
                         let clk = $TIMX::get_clk(&clocks).0;
                         let prescaler = Prescaler::from_register( (*$TIMX::ptr()).ccmr1_input().read().ic1psc().bits() as u8);
                         let psc = (*$TIMX::ptr()).psc.read().psc().bits() as u32;
-                        let period = (*$TIMX::ptr()).arr.read().arr().bits() as u32;
-                        let current = (*$TIMX::ptr()).ccr1.read().ccr().bits() as u32;
 
-                        let mut delta = (period + current) - prev;
-                        if delta > period {
-                            delta -= period;
-                        }
-
-                        *guard = current;
-
-                        compute_freq(delta, clk, prescaler, psc)
+                        compute_freq(current, clk, prescaler, psc)
                     }
                 }
 
@@ -460,28 +449,19 @@ macro_rules! hal {
                     unsafe { (*$TIMX::ptr()).egr.write(|w| w.cc2g().set_bit() ) }
                 }
 
-                fn get_herz(&self, clocks: Clocks) -> Hertz {
-                    static mut PREVIOUS: spin::Mutex<u32> = spin::Mutex::new(0);
-
+                fn get_herz(&mut self, clocks: Clocks) -> Hertz {
                     #[allow(unsafe_code)]
                     unsafe {
-                        let mut guard = PREVIOUS.lock();
-                        let prev = *guard;
+                        let current = (*$TIMX::ptr()).ccr2.read().ccr().bits() as u32;
+
+                        // Reset Counter
+                        (*$TIMX::ptr()).cnt.reset();
 
                         let clk = $TIMX::get_clk(&clocks).0;
                         let prescaler = Prescaler::from_register( (*$TIMX::ptr()).ccmr1_input().read().ic2psc().bits() as u8);
                         let psc = (*$TIMX::ptr()).psc.read().psc().bits() as u32;
-                        let period = (*$TIMX::ptr()).arr.read().arr().bits() as u32;
-                        let current = (*$TIMX::ptr()).ccr2.read().ccr().bits() as u32;
 
-                        let mut delta = (period + current) - prev;
-                        if delta > period {
-                            delta -= period;
-                        }
-
-                        *guard = current;
-
-                        compute_freq(delta, clk, prescaler, psc)
+                        compute_freq(current, clk, prescaler, psc)
                     }
                 }
 
@@ -539,28 +519,19 @@ macro_rules! hal {
                     unsafe { (*$TIMX::ptr()).egr.write(|w| w.cc3g().set_bit() ) }
                 }
 
-                fn get_herz(&self, clocks: Clocks) -> Hertz {
-                    static mut PREVIOUS: spin::Mutex<u32> = spin::Mutex::new(0);
-
+                fn get_herz(&mut self, clocks: Clocks) -> Hertz {
                     #[allow(unsafe_code)]
                     unsafe {
-                        let mut guard = PREVIOUS.lock();
-                        let prev = *guard;
+                        let current = (*$TIMX::ptr()).ccr3.read().ccr().bits() as u32;
+
+                        // Reset Counter
+                        (*$TIMX::ptr()).cnt.reset();
 
                         let clk = $TIMX::get_clk(&clocks).0;
                         let prescaler = Prescaler::from_register( (*$TIMX::ptr()).ccmr2_input().read().ic3psc().bits() as u8);
                         let psc = (*$TIMX::ptr()).psc.read().psc().bits() as u32;
-                        let period = (*$TIMX::ptr()).arr.read().arr().bits() as u32;
-                        let current = (*$TIMX::ptr()).ccr3.read().ccr().bits() as u32;
 
-                        let mut delta = (period + current) - prev;
-                        if delta > period {
-                            delta -= period;
-                        }
-
-                        *guard = current;
-
-                        compute_freq(delta, clk, prescaler, psc)
+                        compute_freq(current, clk, prescaler, psc)
                     }
                 }
 
@@ -618,28 +589,19 @@ macro_rules! hal {
                     unsafe { (*$TIMX::ptr()).egr.write(|w| w.cc4g().set_bit() ) }
                 }
 
-                fn get_herz(&self, clocks: Clocks) -> Hertz {
-                    static mut PREVIOUS: spin::Mutex<u32> = spin::Mutex::new(0);
-
+                fn get_herz(&mut self, clocks: Clocks) -> Hertz {
                     #[allow(unsafe_code)]
                     unsafe {
-                        let mut guard = PREVIOUS.lock();
-                        let prev = *guard;
+                        let current = (*$TIMX::ptr()).ccr4.read().ccr().bits() as u32;
+
+                        // Reset Counter
+                        (*$TIMX::ptr()).cnt.reset();
 
                         let clk = $TIMX::get_clk(&clocks).0;
                         let prescaler = Prescaler::from_register( (*$TIMX::ptr()).ccmr2_input().read().ic4psc().bits() as u8);
                         let psc = (*$TIMX::ptr()).psc.read().psc().bits() as u32;
-                        let period = (*$TIMX::ptr()).arr.read().arr().bits() as u32;
-                        let current = (*$TIMX::ptr()).ccr4.read().ccr().bits() as u32;
 
-                        let mut delta = (period + current) - prev;
-                        if delta > period {
-                            delta -= period;
-                        }
-
-                        *guard = current;
-
-                        compute_freq(delta, clk, prescaler, psc)
+                        compute_freq(current, clk, prescaler, psc)
                     }
                 }
 
