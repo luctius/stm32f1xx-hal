@@ -69,13 +69,13 @@ pub trait InputCaptureExt {
 impl InputCaptureExt for crate::pac::tim2::RegisterBlock {
     #[allow(unsafe_code)]
     unsafe fn ccmr1_input(&self) -> &CCMR1_INPUT {
-        let ptr: *const _ = &self.ccmr1_output;
+        let ptr: *const _ = &self.ccmr1_output();
         &*(ptr as *const CCMR1_INPUT)
     }
 
     #[allow(unsafe_code)]
     unsafe fn ccmr2_input(&self) -> &CCMR2_INPUT {
-        let ptr: *const _ = &self.ccmr2_output;
+        let ptr: *const _ = &self.ccmr2_output();
         &*(ptr as *const CCMR2_INPUT)
     }
 }
