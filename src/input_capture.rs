@@ -1,10 +1,10 @@
 //! ```
 //! use stm32f1xx_hal::stm32::TIM3;
 //! use stm32f1xx_hal::gpio::gpiob::{PB4, PB5};
-//! use stm32f1xx_hal::gpio::{Alternate, PushPull};
+//! use stm32f1xx_hal::gpio::{Input, Floating};
 //! use stm32f1xx_hal::pwm::{Pins, Pwm, C1, C2, C3, C4};
 //!
-//! struct MyChannels(PB4<Alternate<PushPull>>,  PB5<Alternate<PushPull>>);
+//! struct MyChannels(PB4<Input<Floating>>,  PB5<Input<Floating>>);
 //!
 //! impl Pins<TIM3> for MyChannels
 //! {
@@ -49,7 +49,7 @@ use crate::{
     gpio::{
         gpioa::{PA0, PA1, PA2, PA3, PA6, PA7},
         gpiob::{PB0, PB1, PB6, PB7, PB8, PB9},
-        Alternate, PushPull,
+        Input, Floating,
     },
     rcc::{Clocks, APB1},
     time::{Hertz, U32Ext},
@@ -90,7 +90,7 @@ pub trait Pins<TIM> {
 }
 
 impl Pins<TIM2>
-    for (PA0<Alternate<PushPull>>, PA1<Alternate<PushPull>>, PA2<Alternate<PushPull>>, PA3<Alternate<PushPull>>)
+    for (PA0<Input<Floating>>, PA1<Input<Floating>>, PA2<Input<Floating>>, PA3<Input<Floating>>)
 {
     #[allow(clippy::type_complexity)]
     type Channels = (InputChannel<TIM2, C1>, InputChannel<TIM2, C2>, InputChannel<TIM2, C3>, InputChannel<TIM2, C4>);
@@ -103,7 +103,7 @@ impl Pins<TIM2>
 }
 
 impl Pins<TIM3>
-    for (PA6<Alternate<PushPull>>, PA7<Alternate<PushPull>>, PB0<Alternate<PushPull>>, PB1<Alternate<PushPull>>)
+    for (PA6<Input<Floating>>, PA7<Input<Floating>>, PB0<Input<Floating>>, PB1<Input<Floating>>)
 {
     #[allow(clippy::type_complexity)]
     type Channels = (InputChannel<TIM3, C1>, InputChannel<TIM3, C2>, InputChannel<TIM3, C3>, InputChannel<TIM3, C4>);
@@ -116,7 +116,7 @@ impl Pins<TIM3>
 }
 
 impl Pins<TIM4>
-    for (PB6<Alternate<PushPull>>, PB7<Alternate<PushPull>>, PB8<Alternate<PushPull>>, PB9<Alternate<PushPull>>)
+    for (PB6<Input<Floating>>, PB7<Input<Floating>>, PB8<Input<Floating>>, PB9<Input<Floating>>)
 {
     #[allow(clippy::type_complexity)]
     type Channels = (InputChannel<TIM4, C1>, InputChannel<TIM4, C2>, InputChannel<TIM4, C3>, InputChannel<TIM4, C4>);
@@ -269,8 +269,8 @@ fn compute_arr_presc(freq: u32, clock: u32) -> (u16, u16) {
 }
 
 fn compute_freq(counter: u32, clock: u32, prescaler: Prescaler, presc: u32) -> Hertz {
-    let counter_ticks = core::cmp::max(1, counter * presc);
-    ( (clock / counter_ticks) * prescaler.to_cnt() as u32).hz()
+    let counter = core::cmp::max(1, counter / prescaler.to_cnt() as u32);
+    (clock / counter).hz()
 }
 
 macro_rules! hal {
@@ -397,7 +397,7 @@ macro_rules! hal {
                     #[allow(unsafe_code)]
                     let ret = unsafe { (*$TIMX::ptr()).sr.read().cc1of().bit_is_set() };
                     #[allow(unsafe_code)]
-                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc1of().set_bit() ) };
+                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc1of().clear_bit() ) };
 
                     ret
                 }
@@ -452,7 +452,7 @@ macro_rules! hal {
                 fn get_herz(&mut self, clocks: Clocks) -> Hertz {
                     #[allow(unsafe_code)]
                     unsafe {
-                        let current = (*$TIMX::ptr()).ccr2.read().ccr().bits() as u32;
+                        let mut current = (*$TIMX::ptr()).ccr2.read().ccr().bits() as u32;
 
                         // Reset Counter
                         (*$TIMX::ptr()).cnt.reset();
@@ -469,7 +469,7 @@ macro_rules! hal {
                     #[allow(unsafe_code)]
                     let ret = unsafe { (*$TIMX::ptr()).sr.read().cc2of().bit_is_set() };
                     #[allow(unsafe_code)]
-                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc2of().set_bit() ) };
+                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc2of().clear_bit() ) };
 
                     ret
                 }
@@ -539,7 +539,7 @@ macro_rules! hal {
                     #[allow(unsafe_code)]
                     let ret = unsafe { (*$TIMX::ptr()).sr.read().cc3of().bit_is_set() };
                     #[allow(unsafe_code)]
-                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc3of().set_bit() ) };
+                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc3of().clear_bit() ) };
 
                     ret
                 }
@@ -609,7 +609,7 @@ macro_rules! hal {
                     #[allow(unsafe_code)]
                     let ret = unsafe { (*$TIMX::ptr()).sr.read().cc4of().bit_is_set() };
                     #[allow(unsafe_code)]
-                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc4of().set_bit() ) };
+                    unsafe { (*$TIMX::ptr()).sr.modify(|_, w| w.cc4of().clear_bit() ) };
 
                     ret
                 }
