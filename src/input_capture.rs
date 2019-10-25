@@ -270,7 +270,7 @@ fn compute_arr_presc(freq: u32, clock: u32) -> (u16, u16) {
 
 fn compute_freq(counter: u32, clock: u32, prescaler: Prescaler, presc: u32) -> Hertz {
     let counter = core::cmp::max(1, counter / prescaler.to_cnt() as u32);
-    (clock / counter).hz()
+    ( (clock / presc) / counter).hz()
 }
 
 macro_rules! hal {
@@ -452,7 +452,7 @@ macro_rules! hal {
                 fn get_herz(&mut self, clocks: Clocks) -> Hertz {
                     #[allow(unsafe_code)]
                     unsafe {
-                        let mut current = (*$TIMX::ptr()).ccr2.read().ccr().bits() as u32;
+                        let current = (*$TIMX::ptr()).ccr2.read().ccr().bits() as u32;
 
                         // Reset Counter
                         (*$TIMX::ptr()).cnt.reset();
