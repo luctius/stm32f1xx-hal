@@ -63,7 +63,6 @@
 //! [README]: https://github.com/stm32-rs/stm32f1xx-hal/tree/v0.5.3
 
 #![no_std]
-#![deny(intra_doc_link_resolution_failure)]
 
 // If no target specified, print error message.
 #[cfg(not(any(feature = "stm32f100", feature = "stm32f101", feature = "stm32f103")))]
@@ -103,6 +102,8 @@ pub mod afio;
 pub mod backup_domain;
 #[cfg(feature = "device-selected")]
 pub mod bb;
+#[cfg(feature = "device-selected")]
+pub mod capture;
 #[cfg(feature = "device-selected")]
 pub mod delay;
 #[cfg(feature = "device-selected")]
